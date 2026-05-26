@@ -181,42 +181,24 @@ Restart Claude Desktop after editing.
 
 ---
 
-## Example Claude Prompts (after connecting MCP)
-
-```
-Load my tacrolimus project at /projects/tac_peds.mlxtran and run estimation.
-
-Show me the population PK estimates with RSE for the current model.
-
-Build the covariate model automatically using COSSAC with p < 0.05.
-
-Simulate 1000 virtual pediatric patients using the estimated model,
-dosing 0.1 mg/kg Q12h, and compute tacrolimus trough target attainment
-(target 5–15 ng/mL) at steady state.
-
-Generate a 1-compartment oral absorption mlxtran model file with Cl, V, ka.
-```
-
----
-
-## Worked Example — Warfarin PopPK (bundled demo)
+## Worked Example — Theophylline PopPK (bundled demo)
 
 This end-to-end example uses a project that ships with **MonolixSuite**, so you
-can reproduce it without any data of your own. It is the classic warfarin
-single-dose oral PK demo: a 1-compartment model with lag time
-(`lib:oral1_1cpt_TlagkaVCl.txt`), 32 subjects, 247 plasma concentrations.
+can reproduce it without any data of your own. It is the classic theophylline
+single-dose oral PK demo: a 1-compartment first-order absorption model
+(`lib:oral1_1cpt_kaVCl.txt`), 12 subjects, 120 plasma concentrations.
 
 > The demo lives under
-> `<LIXOFT_HOME>/resources/demos/monolix/1.creating_and_using_models/1.1.libraries_of_models/warfarinPK_project.mlxtran`.
-> Copy the `.mlxtran` and its `data/warfarin_data.csv` to a **writable** folder
+> `<LIXOFT_HOME>/resources/demos/monolix/1.creating_and_using_models/1.1.libraries_of_models/theophylline_project.mlxtran`.
+> Copy the `.mlxtran` and its `data/theophylline_data.txt` to a **writable** folder
 > first (the install directory is read-only for estimation output), e.g.
-> `C:/Users/<you>/Documents/warfarin_demo/`.
+> `C:/Users/<you>/Documents/theo_demo/`.
 
 ### Talking to Claude
 
 ```
-Load the warfarin demo at
-C:/Users/<you>/Documents/warfarin_demo/warfarinPK_project.mlxtran,
+Load the theophylline demo at
+C:/Users/<you>/Documents/theo_demo/theophylline_project.mlxtran,
 run the estimation, then show me the population parameters with RSE
 and the model-selection criteria.
 ```
@@ -235,40 +217,41 @@ and the model-selection criteria.
 
 ```json
 {
-  "project": "C:/Users/<you>/Documents/warfarin_demo/warfarinPK_project.mlxtran",
-  "data":    "C:/Users/<you>/Documents/warfarin_demo/data/warfarin_data.csv",
-  "model":   "lib:oral1_1cpt_TlagkaVCl.txt"
+  "project": "C:/Users/<you>/Documents/theo_demo/theophylline_project.mlxtran",
+  "data":    "C:/Users/<you>/Documents/theo_demo/data/theophylline_data.txt",
+  "model":   "lib:oral1_1cpt_kaVCl.txt"
 }
 ```
 
+**2. `monolix_get_project_info`** → headers map to
+`id, amount, time, observation` plus `WEIGHT` (continuous covariate) and
+`SEX` (categorical covariate).
+
 **3. `monolix_run`** → `"Estimation complete."` (SAEM + conditional modes +
-standard errors + log-likelihood; ~20–40 s on a laptop).
+standard errors + log-likelihood; ~3 s on a laptop).
 
 **4. `monolix_get_estimates`** — actual output from this run:
 
 | Parameter | Estimate | SE | RSE % |
 |---|---|---|---|
-| `Tlag_pop`  | 0.886  | 0.157  | 17.8 |
-| `ka_pop`    | 1.640  | 0.533  | 32.5 |
-| `V_pop`     | 7.952  | 0.326  | 4.1  |
-| `Cl_pop`    | 0.132  | 0.0069 | 5.2  |
-| `omega_Tlag`| 0.443  | 0.106  | 23.9 |
-| `omega_ka`  | 0.921  | 0.233  | 25.3 |
-| `omega_V`   | 0.221  | 0.030  | 13.8 |
-| `omega_Cl`  | 0.290  | 0.038  | 12.9 |
-| `a` (add. err.) | 0.243 | 0.038 | 15.8 |
-| `b` (prop. err.)| 0.052 | 0.0077 | 14.7 |
+| `ka_pop`    | 1.526   | 0.316   | 20.7 |
+| `V_pop`     | 0.455   | 0.0204  | 4.5  |
+| `Cl_pop`    | 0.0403  | 0.00329 | 8.2  |
+| `omega_ka`  | 0.659   | 0.147   | 22.3 |
+| `omega_V`   | 0.125   | 0.0383  | 30.6 |
+| `omega_Cl`  | 0.261   | 0.0614  | 23.5 |
+| `a` (add. err.) | 0.444 | 0.125 | 28.2 |
+| `b` (prop. err.)| 0.0538| 0.024 | 44.5 |
 
-**5. `monolix_get_llx`** (importance sampling):
+**5. `monolix_get_llx`** (linearization):
 
 ```json
-{ "OFV": 657.78, "AIC": 677.78, "BIC": 692.44, "BICc": 704.70 }
+{ "OFV": 339.56, "AIC": 355.56, "BIC": 359.44, "BICc": 370.95 }
 ```
 
 These numbers were produced by running this server against
-**MonolixSuite 2024R1** with R 4.5.3. Clearance ≈ 0.13 L/h and V ≈ 7.95 L are
-the well-known warfarin reference values, and every parameter is well estimated
-(RSE < 35 %).
+**MonolixSuite 2024R1**. The estimates match the well-known theophylline
+reference values, and the fixed effects are all well estimated (RSE < 21 %).
 
 > **Tip:** to compare structural models, change the model with
 > `monolix_set_structural_model` (or `lixoft_list_library_models` to browse the
