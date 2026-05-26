@@ -176,20 +176,24 @@ ${pdSection}
   // ── 5. List available Lixoft library models ───────────────────────────────
   server.tool(
     "lixoft_list_library_models",
-    "List all available built-in PK/PD models from the Lixoft model library.",
+    "List built-in models from the Lixoft model library for a given library type.",
     {
+      library: z
+        .enum(["pk", "pd", "pkpd", "tmdd", "tte", "count", "categorical"])
+        .default("pk")
+        .describe("Library to browse"),
       filter: z
         .string()
         .optional()
         .describe("Optional substring filter, e.g. 'oral' or '2cpt'"),
     },
-    async ({ filter }) => {
+    async ({ library, filter }) => {
       const s = await pool.get("monolix");
       const filterCode = filter
         ? `models <- models[grepl("${filter}", models, ignore.case=TRUE)]`
         : "";
       const out = await s.run(`
-models <- getLixoftLibraryModels()
+models <- getLibraryModelName(library="${library}")
 ${filterCode}
 cat(jsonlite::toJSON(models, auto_unbox=TRUE))
 `);

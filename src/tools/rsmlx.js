@@ -133,7 +133,7 @@ ${toJson("llp_result")}
 models <- c(${modelList})
 criteria_list <- lapply(models, function(m) {
   setStructuralModel(m)
-  runMonolix(tasks = list(populationParameterEstimation=TRUE, logLikelihoodEstimation=TRUE))
+  setScenario(c(populationParameterEstimation=TRUE, logLikelihoodEstimation=TRUE)); runScenario()
   ll <- getLogLikelihood()
   data.frame(model=m, AIC=ll$AIC, BIC=ll$BIC, BICc=ll$BICc)
 })

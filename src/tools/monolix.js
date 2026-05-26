@@ -23,11 +23,10 @@ export function registerMonolixTools(server, pool) {
       const s = await pool.get("monolix");
       const out = await s.run(`
 loadProject("${path}")
-info <- getProjectSettings()
 cat(jsonlite::toJSON(list(
-  project = info$name,
-  data    = info$dataFile,
-  model   = info$modelFile
+  project = getProjectSettings()$project,
+  data    = getData()$dataFile,
+  model   = getStructuralModel()
 ), auto_unbox=TRUE))
 `);
       return { content: [{ type: "text", text: out }] };
@@ -42,9 +41,8 @@ cat(jsonlite::toJSON(list(
     async () => {
       const s = await pool.get("monolix");
       const out = await s.run(`
-info  <- getProjectSettings()
-data  <- getData()
-${toJson("list(project=info$name, dataFile=info$dataFile, modelFile=info$modelFile, data_summary=list(nobs=nrow(data$data), subjects=length(unique(data$data[[data$headerTypes=='id']]))))")}
+d <- getData()
+${toJson("list(project=getProjectSettings()$project, dataFile=d$dataFile, model=getStructuralModel(), headers=d$header, headerTypes=d$headerTypes)")}
 `);
       return { content: [{ type: "text", text: out }] };
     }
@@ -178,7 +176,7 @@ cat("Initial estimates set.")
       const out = await s.run(`
 scenario <- getScenario()
 ${tasks ? `scenario$tasks <- ${taskArg}; setScenario(scenario)` : ""}
-runMonolix()
+runScenario()
 cat("Estimation complete.")
 `);
       return { content: [{ type: "text", text: out }] };
@@ -222,7 +220,7 @@ ${toJson("res")}
     {},
     async () => {
       const s = await pool.get("monolix");
-      const out = await s.run(toJson("getLogLikelihood()"));
+      const out = await s.run(toJson("getEstimatedLogLikelihood()"));
       return { content: [{ type: "text", text: out }] };
     }
   );
@@ -251,7 +249,7 @@ ${toJson("conv")}
     async () => {
       const s = await pool.get("monolix");
       const out = await s.run(`
-res <- getResiduals()
+res <- getChartsDataResidualsScatterPlot()
 ${toJson("res")}
 `);
       return { content: [{ type: "text", text: out }] };
@@ -266,7 +264,7 @@ ${toJson("res")}
     async () => {
       const s = await pool.get("monolix");
       const out = await s.run(`
-pred <- getPredictions()
+pred <- getChartsDataObsPred()
 ${toJson("pred")}
 `);
       return { content: [{ type: "text", text: out }] };

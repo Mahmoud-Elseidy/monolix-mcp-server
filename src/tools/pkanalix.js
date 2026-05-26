@@ -41,7 +41,7 @@ cat("PKanalix project loaded:", "${path}")
         : "";
       const out = await s.run(`
 ${tauLine}
-runPkanalix()
+runScenario()
 cat("NCA complete.")
 `);
       return { content: [{ type: "text", text: out }] };
@@ -61,7 +61,7 @@ cat("NCA complete.")
     async ({ parameters }) => {
       const s = await pool.get("pkanalix");
       const out = await s.run(`
-res <- getNcaResults()
+res <- getNCAIndividualParameters()
 ${
   parameters && parameters.length > 0
     ? `res <- res[, c("id", ${parameters.map((p) => `"${p}"`).join(", ")}), drop=FALSE]`
@@ -81,7 +81,7 @@ ${toJson("res")}
     async () => {
       const s = await pool.get("pkanalix");
       const out = await s.run(`
-res  <- getNcaResults()
+res  <- getNCAIndividualParameters()
 num  <- res[, sapply(res, is.numeric), drop=FALSE]
 smry <- data.frame(
   parameter = names(num),
@@ -105,7 +105,7 @@ ${toJson("smry")}
     async () => {
       const s = await pool.get("pkanalix");
       const out = await s.run(`
-res <- getNcaResults()
+res <- getNCAIndividualParameters()
 dose_cols <- grep("dose", names(res), value=TRUE, ignore.case=TRUE)
 if (length(dose_cols) > 0 && "AUClast" %in% names(res)) {
   dose_col <- dose_cols[1]
@@ -132,7 +132,7 @@ if (length(dose_cols) > 0 && "AUClast" %in% names(res)) {
     async ({ output_path }) => {
       const s = await pool.get("pkanalix");
       const out = await s.run(`
-res <- getNcaResults()
+res <- getNCAIndividualParameters()
 write.csv(res, "${output_path}", row.names=FALSE)
 cat("Exported", nrow(res), "subjects to:", "${output_path}")
 `);

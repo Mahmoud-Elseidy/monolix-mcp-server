@@ -171,7 +171,7 @@ cat("Output '${output_name}' defined for variable '${variable}'")
       const s = await pool.get("simulx");
       const out = await s.run(`
 setNbReplicates(${n_replications})
-runSimulx()
+runSimulation()
 cat("Simulation complete. Replications:", ${n_replications})
 `);
       return { content: [{ type: "text", text: out }] };
@@ -297,7 +297,7 @@ ${toJson("result")}
       const out = await s.run(`
 library(dplyr)
 setNbReplicates(${n_replications})
-runSimulx()
+runSimulation()
 sim <- getSimulationResults()$${output_name}
 obs <- read.csv("${observed_data_path}")
 

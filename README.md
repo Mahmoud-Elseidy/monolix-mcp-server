@@ -199,6 +199,83 @@ Generate a 1-compartment oral absorption mlxtran model file with Cl, V, ka.
 
 ---
 
+## Worked Example — Warfarin PopPK (bundled demo)
+
+This end-to-end example uses a project that ships with **MonolixSuite**, so you
+can reproduce it without any data of your own. It is the classic warfarin
+single-dose oral PK demo: a 1-compartment model with lag time
+(`lib:oral1_1cpt_TlagkaVCl.txt`), 32 subjects, 247 plasma concentrations.
+
+> The demo lives under
+> `<LIXOFT_HOME>/resources/demos/monolix/1.creating_and_using_models/1.1.libraries_of_models/warfarinPK_project.mlxtran`.
+> Copy the `.mlxtran` and its `data/warfarin_data.csv` to a **writable** folder
+> first (the install directory is read-only for estimation output), e.g.
+> `C:/Users/<you>/Documents/warfarin_demo/`.
+
+### Talking to Claude
+
+```
+Load the warfarin demo at
+C:/Users/<you>/Documents/warfarin_demo/warfarinPK_project.mlxtran,
+run the estimation, then show me the population parameters with RSE
+and the model-selection criteria.
+```
+
+### What runs under the hood
+
+| Step | Tool | Key arguments |
+|---|---|---|
+| 1 | `monolix_load_project` | `path` to the `.mlxtran` |
+| 2 | `monolix_get_project_info` | — |
+| 3 | `monolix_run` | (all tasks) |
+| 4 | `monolix_get_estimates` | — |
+| 5 | `monolix_get_llx` | — |
+
+**1. `monolix_load_project`**
+
+```json
+{
+  "project": "C:/Users/<you>/Documents/warfarin_demo/warfarinPK_project.mlxtran",
+  "data":    "C:/Users/<you>/Documents/warfarin_demo/data/warfarin_data.csv",
+  "model":   "lib:oral1_1cpt_TlagkaVCl.txt"
+}
+```
+
+**3. `monolix_run`** → `"Estimation complete."` (SAEM + conditional modes +
+standard errors + log-likelihood; ~20–40 s on a laptop).
+
+**4. `monolix_get_estimates`** — actual output from this run:
+
+| Parameter | Estimate | SE | RSE % |
+|---|---|---|---|
+| `Tlag_pop`  | 0.886  | 0.157  | 17.8 |
+| `ka_pop`    | 1.640  | 0.533  | 32.5 |
+| `V_pop`     | 7.952  | 0.326  | 4.1  |
+| `Cl_pop`    | 0.132  | 0.0069 | 5.2  |
+| `omega_Tlag`| 0.443  | 0.106  | 23.9 |
+| `omega_ka`  | 0.921  | 0.233  | 25.3 |
+| `omega_V`   | 0.221  | 0.030  | 13.8 |
+| `omega_Cl`  | 0.290  | 0.038  | 12.9 |
+| `a` (add. err.) | 0.243 | 0.038 | 15.8 |
+| `b` (prop. err.)| 0.052 | 0.0077 | 14.7 |
+
+**5. `monolix_get_llx`** (importance sampling):
+
+```json
+{ "OFV": 657.78, "AIC": 677.78, "BIC": 692.44, "BICc": 704.70 }
+```
+
+These numbers were produced by running this server against
+**MonolixSuite 2024R1** with R 4.5.3. Clearance ≈ 0.13 L/h and V ≈ 7.95 L are
+the well-known warfarin reference values, and every parameter is well estimated
+(RSE < 35 %).
+
+> **Tip:** to compare structural models, change the model with
+> `monolix_set_structural_model` (or `lixoft_list_library_models` to browse the
+> library), re-run, and compare `BICc` from `monolix_get_llx`.
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
