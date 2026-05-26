@@ -1,0 +1,15 @@
+{
+  "name": "monolix-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Lixoft MonolixSuite (Monolix, Simulx, PKanalix) via lixoftConnectors",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  }
+}
