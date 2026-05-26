@@ -41,7 +41,7 @@ on first use and **reused** across all tool calls — no per-call startup overhe
 install.packages(c("Rsmlx", "RsSimulx"),
                  repos = "https://lixoft.r-universe.dev")
 
-# lixoftConnectors (installed with MonolixSuite, but may need path fix)
+# lixoftConnectors (installed with MonolixSuite)
 # See: https://lixoft.com/faq/lixoftconnectors-installation/
 
 # CRAN
